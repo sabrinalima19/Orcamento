@@ -1,0 +1,104 @@
+package bds;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+public class Tabela extends JFrame {
+
+    private JTable table;
+    private JLabel lblTotalDosValores;
+
+    
+    public Tabela() {
+    	 lblTotalDosValores = new JLabel();
+         getContentPane().add(lblTotalDosValores, BorderLayout.SOUTH);
+         
+         setTitle("Tabela de Itens de Evento");
+         setSize(800, 400);
+         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+         table = new JTable();
+
+         JScrollPane scrollPane = new JScrollPane(table);
+         getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+         String jdbcURL = "jdbc:mysql://localhost:3306/TaskTide";
+         String username = "root";
+         String password = "root";
+
+         Calcular();
+
+        try {
+            Connection connection = DriverManager.getConnection(jdbcURL, username, password);
+            Statement statement = connection.createStatement();
+
+            String query = "SELECT * FROM tbItensEvento";
+            ResultSet resultSet = statement.executeQuery(query);
+
+            DefaultTableModel model = new DefaultTableModel();
+            model.addColumn("ID Item de Evento");
+            model.addColumn("ID Evento");
+            model.addColumn("Quantidade");
+            model.addColumn("Nome do Item");
+            model.addColumn("Descrição do Item");
+            model.addColumn("Valor Unitário");
+            model.addColumn("Valor Total");
+
+            while (resultSet.next()) {
+                int idItemEvento = resultSet.getInt("idItemEvento");
+                int idEvento = resultSet.getInt("idEvento");
+                int quantidade = resultSet.getInt("quantidade");
+                int valor_unitario = resultSet.getInt("valor_unitario");
+                int valor_total = resultSet.getInt("valor_total");
+                String itemNome = resultSet.getString("itemNome");
+                String itemDescricao = resultSet.getString("itemDescricao");
+
+                model.addRow(new Object[]{Integer.valueOf(idItemEvento), Integer.valueOf(idEvento), Integer.valueOf(quantidade), itemNome, itemDescricao, Integer.valueOf(valor_unitario), Integer.valueOf(valor_total)});
+            }
+
+            table.setModel(model);
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();}
+        }
+        
+        
+    private void Calcular() {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/TaskTide?user=root&password=root");
+            String sql = "SELECT SUM(valor_total) AS total FROM tbItensEvento";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int total = rs.getInt("total");
+                lblTotalDosValores.setText("R$" + total); 
+  }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro ao calcular o valor total: " + e.getMessage());
+        } finally {
+            try {
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Tabela tabelaGUI = new Tabela();
+        tabelaGUI.setVisible(true);
+    }
+  }
