@@ -1,0 +1,13 @@
+USE TaskTide;
+DROP TABLE IF EXISTS tbItensEvento;
+CREATE TABLE tbItensEvento(
+    idItemEvento INT AUTO_INCREMENT,
+    idEvento INT NOT NULL,
+    itemNome VARCHAR(90) NOT NULL,
+    itemDescricao VARCHAR(800),
+    quantidade INT,
+    valor_unitario INT,
+    valor_total INT,
+    PRIMARY KEY(idItemEvento),
+    FOREIGN KEY (idEvento) REFERENCES tbEvento(id)
+);
